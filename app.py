@@ -8,76 +8,6 @@ from datetime import datetime
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
-# --- COGNITO/DESIGN: DER ULTIMATIVE KÄRCHER-INPUT-FIX ---
-st.markdown(
-    """
-    <style>
-    /* 1. Äußerer App-Hintergrund: Original RAL 7012 Basaltgrau */
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-        background-color: #5F696E !important;
-    }
-
-    /* 2. Die Hauptkarte: Weiß mit fettem Kärcher-Gelb-Balken (#FFDD00) oben */
-    [data-testid="stMainBlockContainer"] {
-        background-color: #FFFFFF !important;
-        padding: 2.5rem 2rem;
-        border-radius: 12px;
-        box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.5);
-        border-top: 16px solid #FFDD00 !important; 
-        margin-top: 30px;
-        margin-bottom: 30px;
-    }
-    
-    /* 3. Zwingt allen normalen Text auf der weißen Karte, tiefschwarz zu sein */
-    [data-testid="stMainBlockContainer"] h1, 
-    [data-testid="stMainBlockContainer"] h2, 
-    [data-testid="stMainBlockContainer"] h3, 
-    [data-testid="stMainBlockContainer"] p,
-    [data-testid="stMainBlockContainer"] label,
-    [data-testid="stMainBlockContainer"] span {
-        color: #111111 !important;
-    }
-    
-    /* 4. DIE RETTUNG FÜR DIE EINGABEBOXEN: Zwingt die Kästen, hell zu sein, und die Zahlen schwarz */
-    div[data-baseweb="input"] {
-        background-color: #F4F6F7 !important; /* Helles Industriegrau für die Box */
-        border: 1px solid #BDC3C7 !important;
-        border-radius: 4px !important;
-    }
-    
-    /* Zielgerichtet für den Text/die Zahlen im Inneren der Boxen */
-    div[data-baseweb="input"] input {
-        color: #111111 !important; /* Tiefschwarze Zahlen */
-        -webkit-text-fill-color: #111111 !important; /* Fix für iPhones/Safaribrowser */
-        font-weight: bold !important;
-        font-size: 1.1rem !important;
-    }
-    
-    /* Plus/Minus-Knöpfe bei den Zahlenfeldern lesbar machen */
-    div[data-testid="stNumberInput"] button {
-        background-color: #E5E8E8 !important;
-        color: #111111 !important;
-    }
-    
-    /* Ausnahme für Systemmeldungen (st.error, st.success) beibehalten */
-    div[data-testid="stNotification"] *, 
-    div[data-testid="stNotification"] p {
-        color: inherit !important;
-    }
-
-    /* Anpassung der Tabs (Registerkarten) im Kärcher-Look */
-    button[data-baseweb="tab"] {
-        color: #5F696E !important;
-    }
-    button[data-baseweb="tab"][aria-selected="true"] {
-        color: #111111 !important;
-        border-bottom-color: #FFDD00 !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 # --- FUNKTION: E-MAIL SENDEN ---
 def sende_protokoll_email(bericht_text):
     smtp_server = "smtp.gmail.com"  
@@ -141,52 +71,87 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
     
     with tab1:
         st.subheader("Becken 1: Entfettung (eska phor N 6811)")
+        st.caption("Eingesetzte Chemie: eska phor N 6811 (Neutralreiniger)")
+        
         fs1 = st.slider("Füllstand (%):", 50, 100, 70)
         v_eff1 = 4000 * (fs1 / 100.0)
-        ph1 = st.number_input("pH-Wert (9.0-9.5):", 0.0, 14.0, 9.2, step=0.1, key="p1")
-        lw1 = st.number_input("Leitwert (4000-9000):", 0, 20000, 5500, step=100, key="l1")
-        temp1 = st.number_input("Temperatur (55-60 °C):", 0, 100, 58, key="t1")
-        ml1 = st.number_input("Titration (ml):", 0.0, 50.0, 5.5, key="m1")
+        st.info(f"Berechnetes aktuelles Beckenvolumen: {int(v_eff1)} Liter")
+        
+        ph1 = st.number_input("pH-Wert (Ziel: 9.0 - 9.5):", min_value=0.0, max_value=14.0, value=9.2, step=0.1, key="p1")
+        lw1 = st.number_input("Leitwert (Ziel: 4000 - 9000 µS/cm):", min_value=0, max_value=20000, value=5500, step=100, key="l1")
+        temp1 = st.number_input("Temperatur (Ziel: 55 - 60 °C):", min_value=0, max_value=100, value=58, key="t1")
+        ml1 = st.number_input("Titration in ml (Entfettung):", min_value=0.0, max_value=50.0, value=5.5, key="m1")
         ist_konz1 = ml1 * 0.5
         
         bedarf_kg1 = max(0.0, (2.75 - ist_konz1) * (v_eff1 / 1000.0) * 10.0) if ist_konz1 < 2.5 else 0.0
         
-        st.metric(label="Aktuelle Konzentration Entfettung", value=f"{ist_konz1} %", delta=f"{round(ist_konz1 - 2.75, 2)} %")
+        st.metric(label="Aktuelle Konzentration Entfettung", value=f"{ist_konz1} %", delta=f"{round(ist_konz1 - 2.75, 2)} % (Ziel: 2.5 - 3.0%)")
         if bedarf_kg1 > 0:
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
             st.markdown(f"### ⚖️ **{round(bedarf_kg1, 1)} kg** oder 🧪 **{round(bedarf_kg1/1.09, 1)} Liter** eska phor N 6811 hinzugeben.")
+            st.warning("""
+            **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor N 6811):**
+            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen!
+            * Körperschutz: **Schürze** verpflichtend!
+            """)
+        else:
+            st.success("🎯 Konzentration und Beckenwerte im optimalen Bereich!")
 
     with tab2:
         st.subheader("Becken 2: Spüle 2")
-        lw2 = st.number_input("Leitwert (max. 1500):", 0, 5000, 1100, key="l2")
-        temp2 = st.number_input("Temperatur (30-40 °C):", 0, 100, 34, key="t2")
-        if lw2 > 1500: st.error("❌ Leitwert zu hoch!")
+        lw2 = st.number_input("Leitwert (Ziel: max. 1500 µS/cm):", min_value=0, max_value=5000, value=1100, key="l2")
+        temp2 = st.number_input("Temperatur (Ziel: 30 - 40 °C):", min_value=0, max_value=100, value=34, key="t2")
+        if lw2 > 1500: 
+            st.error("❌ Leitwert zu hoch! Bitte Frischwasserzulauf erhöhen.")
+        else:
+            st.success("✅ Spülwasser-Leitwert im grünen Bereich.")
 
     with tab3:
         st.subheader("Becken 3: VE-Spüle 1")
-        lw3 = st.number_input("Leitwert (max. 250):", 0, 2000, 150, key="l3")
-        if lw3 > 250: st.error("❌ Leitwert zu hoch!")
+        lw3 = st.number_input("Leitwert (Ziel: max. 250 µS/cm):", min_value=0, max_value=2000, value=150, key="l3")
+        if lw3 > 250: 
+            st.error("❌ Leitwert zu hoch! VE-Wasserqualität ungenügend.")
+        else:
+            st.success("✅ Erste VE-Spüle läuft sauber.")
 
     with tab4:
         st.subheader("Becken 4: Passivierung (eska phor P 355-2)")
+        st.caption("Eingesetzte Chemie: eska phor P 355-2 (Dünnschichtpassivierung)")
+        
         fs4 = st.slider("Füllstand Passivierung (%):", 50, 100, 70)
         v_eff4 = 1000 * (fs4 / 100.0)
-        ph4 = st.number_input("pH-Wert (4.5-5.0):", 0.0, 14.0, 4.7, step=0.1, key="p4")
-        lw4 = st.number_input("Leitwert (max. 500):", 0, 5000, 350, key="l4")
-        ml4 = st.number_input("Titration Passivierung (ml):", 0.0, 50.0, 4.4, key="m4")
+        st.info(f"Berechnetes aktuelles Passivierungsvolumen: {int(v_eff4)} Liter")
+        
+        ph4 = st.number_input("pH-Wert (Ziel: 4.5 - 5.0):", min_value=0.0, max_value=14.0, value=4.7, step=0.1, key="p4")
+        lw4 = st.number_input("Leitwert (Ziel: max. 500 µS/cm):", min_value=0, max_value=5000, value=350, key="l4")
+        ml4 = st.number_input("Titration Passivierung in ml:", min_value=0.0, max_value=50.0, value=4.4, key="m4")
         ist_konz4 = ml4 * 0.05
         
         bedarf_kg4 = max(0.0, (0.225 - ist_konz4) * (v_eff4 / 1000.0) * 10.0) if ist_konz4 < 0.15 else 0.0
         
-        st.metric(label="Aktuelle Konzentration Passivierung", value=f"{round(ist_konz4, 3)} %", delta=f"{round(ist_konz4 - 0.225, 3)} %")
+        st.metric(label="Aktuelle Konzentration Passivierung", value=f"{round(ist_konz4, 3)} %", delta=f"{round(ist_konz4 - 0.225, 3)} % (Ziel: 0.15 - 0.30%)")
         if bedarf_kg4 > 0:
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
             st.markdown(f"### ⚖️ **{round(bedarf_kg4, 2)} kg** oder 🧪 **{round(bedarf_kg4/1.09, 2)} Liter** eska phor P 355-2 hinzugeben.")
+            st.warning("""
+            **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor P 355-2):**
+            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**!
+            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen!
+            """)
+        else:
+            st.success("🎯 Passivierungsbad läuft stabil im optimalen Bereich.")
 
     with tab5:
         st.subheader("Becken 5: VE-Spüle 2")
-        lw5 = st.number_input("Leitwert (max. 50):", 0, 500, 15, key="l5")
-        if lw5 > 50: st.error("🚨 KRITISCH! Leitwert zu hoch!")
+        lw5 = st.number_input("Leitwert (Ziel: max. 50 µS/cm):", min_value=0, max_value=500, value=15, key="l5")
+        if lw5 > 50: 
+            st.error("🚨 KRITISCH! Leitwert zu hoch! Gefahr von Salzflecken unter dem Pulver!")
+        else:
+            st.success("🎯 Perfekt! Leitwert ist optimal.")
 
     # --- TAB 6: HISTORIE & ABSENDEN ---
     with tab6:
@@ -231,7 +196,7 @@ Becken 3 (VE-Spüle 1): Leitwert {lw3} µS
 Becken 4 (Passivierung):
 - Aktuelle Konz.: {round(ist_konz4, 3)} % (Soll: 0.15 - 0.30%)
 - pH-Wert: {ph4} | Leitwert: {lw4} µS
-- Nachdosiermenge: {round(bedarf_kg4, 2)} kg
+- Nachdosiermenge: {round(bedarf_kg4, 2)} kg ({round(bedarf_kg4/1.09, 2)} Liter)
 
 Becken 5 (VE-Spüle 2): Leitwert {lw5} µS (Soll: max. 50 µS)
 

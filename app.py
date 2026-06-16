@@ -1,16 +1,15 @@
 import streamlit as st
 
 # App-Konfiguration für Smartphones optimieren
-st.set_page_config(page_title="Haug Chemie Vorbehandlung", page_icon="🧪", layout="centered")
+st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
 st.title("🧪 Qualitätskontrolle Vorbehandlung")
-st.write("Produkte von HAUG CHEMIE GmbH")
+st.write("Produktionsüberwachung & Dosierrechner")
 
 # --- SCHRITT 1: MORGEN-CHECK ---
 st.header("1. Morgen-Check-up")
 st.write("Bitte zuerst alle mechanischen Prüfungen bestätigen:")
 
-# Layout für die Basis-Schalter
 col1, col2 = st.columns(2)
 with col1:
     uv_anlage = st.checkbox("🔄 UV-Anlage gestartet")
@@ -18,7 +17,7 @@ with col1:
 
 st.divider()
 
-# Neue detaillierte Bandfilter-Option
+# Bandfilter-Option mit Tausch-Logik
 st.subheader("📄 Bandfilter-Prüfung")
 bandfilter_status = st.radio(
     "Zustand des Filtervlieses:",
@@ -36,14 +35,14 @@ if bandfilter_status == "🚨 Filtervlies ist leer / muss getauscht werden":
     )
     filter_gewechselt = st.checkbox("✅ Tausch durchgeführt (Neues Vlies ist eingelegt)")
     if filter_gewechselt:
-        st.success(f" Wunderbar. Tausch an '{filter_becken}' dokumentiert.")
+        st.success(f"👍 Tausch an '{filter_becken}' erfolgreich dokumentiert.")
         bandfilter_bereit = True
 else:
     bandfilter_bereit = True
 
 st.divider()
 
-# Neue detaillierte Salzstand-Option
+# Salzstand-Option mit Sack-Zähler
 st.subheader("🧂 Enthärtungsanlage (Salzstand)")
 salz_geprueft = st.checkbox("🔍 Salzstand kontrolliert")
 salz_nachgefuellt = st.checkbox("➕ Wurde heute Salz nachgefüllt?")
@@ -57,7 +56,7 @@ if salz_nachgefuellt:
     )
     st.info(f"💾 Protokoll: {saecke_salz} Sack Salz hinzugefügt.")
 
-# Freigabe-Logik für den Chemie-Teil
+# Freigabe-Logik für die Beckenanalyse
 if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
     st.success("✅ Morgen-Check-up erfolgreich abgeschlossen! Bereit für die Messwerte.")
     st.divider()
@@ -73,10 +72,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         "5. VE-Spüle 2"
     ])
     
-    # --- BECKEN 1: ENTFETTUNG (eska phor N 6811 & EM 315) ---
+    # --- BECKEN 1: ENTFETTUNG (eska phor N 6811) ---
     with tab1:
         st.subheader("Becken 1: Entfettung (Max. 4.000 Liter)")
-        st.caption("Eingesetzte Chemie: eska phor N 6811 & ESKAPHOR EM 315")
+        st.caption("Eingesetzte Chemie: eska phor N 6811 (Neutralreiniger)")
         
         fs1 = st.slider("Aktueller Füllstand (in %):", min_value=50, max_value=100, value=70, step=1, key="fs1")
         v_eff1 = 4000 * (fs1 / 100.0)
@@ -87,11 +86,14 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         temp1 = st.number_input("Temperatur (Ziel: 55 - 60 °C):", min_value=0, max_value=100, value=58, step=1, key="temp1")
         
         st.markdown("**Laboranalyse (Titration):**")
-        ml1 = st.number_input("Verbrauch Titrierlösung in ml:", min_value=0.0, max_value=50.0, value=5.5, step=0.1, key="ml1")
+        ml1 = st.number_input("Verbrauch Titrierlösung in ml (Entfettung):", min_value=0.0, max_value=50.0, value=5.5, step=0.1, key="ml1")
         
+        # Titrationsfaktor (1ml entspricht 0.5% Konzentration - anpassen falls nötig)
         titrations_faktor_entfettung = 0.5 
         ist_konz1 = ml1 * titrations_faktor_entfettung
-        soll_min1, soll_max1, soll_ziel1 = 2.5, 3.0, 2.75
+        soll_min1 = 2.5
+        soll_max1 = 3.0
+        soll_ziel1 = 2.75 # Perfekter Mittelwert als Dosierziel
         
         st.markdown("### 📋 Handlungsanweisung:")
         
@@ -100,29 +102,32 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         if not (4000 <= lw1 <= 9000):
             st.error(f"❌ Leitwert außerhalb! Aktuell: {lw1} µS/cm (Soll: 4000 - 9000 µS/cm).")
         if not (55 <= temp1 <= 60):
-            st.warning(f"⚠️ Temperatur prüfen! Aktuell: {temp1} °C (Soll: 55 - 60 °C).")
+            st.warning(f"⚠️ Heizung/Temperatur prüfen! Aktuell: {temp1} °C (Soll: 55 - 60 °C).")
             
-        st.metric(label="Aktuelle Konzentration", value=f"{ist_konz1} %", delta=f"{round(ist_konz1 - soll_ziel1, 2)} %")
+        st.metric(label="Aktuelle Konzentration Entfettung", value=f"{ist_konz1} %", delta=f"{round(ist_konz1 - soll_ziel1, 2)} % (Ziel: 2.5 - 3.0%)")
         
         if ist_konz1 < soll_min1:
             fehlende_prozent = soll_ziel1 - ist_konz1
+            # Standardwert: 10 kg Produkt pro 1000L Wasser bewirken 1% Erhöhung
             chemie_faktor1 = 10.0 
             bedarf_kg = (fehlende_prozent * (v_eff1 / 1000.0)) * chemie_faktor1
+            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter = bedarf_kg / 1.09
             
-            st.error(f"❌ Konzentration zu gering! Bitte **{round(bedarf_kg, 1)} kg** (ca. **{round(bedarf_liter, 1)} Liter**) eska phor N 6811 nachdosieren.")
+            st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
+            st.markdown(f"### ⚖️ **{round(bedarf_kg, 1)} kg** oder 🧪 **{round(bedarf_liter, 1)} Liter** eska phor N 6811 hinzugeben.")
             
             st.warning("""
-            **⚠️ SICHERHEITSHINWEIS (eska phor N 6811):**
-            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen) [cite: 900, 901, 906]
-            * **PSA beim Dosieren [cite: 1128]:** * Gestellbrille mit Seitenschutz [cite: 1130]
-              * Schutzhandschuhe aus FKM (0,7 mm) oder CR (0,65 mm) [cite: 1135, 1136, 1137]
-              * Schürze [cite: 1142]
+            **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor N 6811):**
+            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen!
+            * Körperschutz: **Schürze** verpflichtend!
             """)
         elif ist_konz1 > soll_max1:
-            st.warning("⚠️ Konzentration zu hoch! Laufende Dosierung drosseln.")
+            st.warning("⚠️ Konzentration zu hoch! Automatische Dosierpumpe drosseln oder vorübergehend abschalten.")
         else:
-            st.success("🎯 Alle Werte im optimalen Bereich!")
+            st.success("🎯 Konzentration und Beckenwerte sind perfekt im Soll!")
 
     # --- BECKEN 2: SPÜLE 2 ---
     with tab2:
@@ -132,9 +137,9 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         
         st.markdown("### 📋 Handlungsanweisung:")
         if lw2 > 1500:
-            st.error(f"❌ Leitwert zu hoch ({lw2} µS/cm)! Bitte Frischwasserzulauf erhöhen / Becken teilentleeren.")
+            st.error(f"❌ Leitwert zu hoch ({lw2} µS/cm)! Spülwasser stark verschleppt. Bitte Frischwasserzulauf erhöhen oder Becken teilentleeren.")
         else:
-            st.success("✅ Spülwasser-Leitwert im grünen Bereich.")
+            st.success("✅ Spülwasser-Leitwert ist in Ordnung.")
         if not (30 <= temp2 <= 40):
             st.warning(f"⚠️ Temperatur prüfen! Aktuell: {temp2} °C (Soll: 30 - 40 °C).")
 
@@ -148,7 +153,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         if lw3 > 250:
             st.error(f"❌ Leitwert zu hoch ({lw3} µS/cm)! VE-Wasserqualität ungenügend. Kreislauf / Patrone prüfen!")
         else:
-            st.success("✅ VE-Wasserqualität ist gut.")
+            st.success("✅ Erste VE-Spüle läuft sauber.")
 
     # --- BECKEN 4: PASSIVIERUNG (eska phor P 355-2) ---
     with tab4:
@@ -157,7 +162,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         
         fs4 = st.slider("Aktueller Füllstand (in %):", min_value=50, max_value=100, value=70, step=1, key="fs4")
         v_eff4 = 1000 * (fs4 / 100.0)
-        st.info(f"Berechnetes aktuelles Beckenvolumen: {int(v_eff4)} Liter")
+        st.info(f"Berechnetes aktuelles Passivierungsvolumen: {int(v_eff4)} Liter")
         
         ph4 = st.number_input("pH-Wert (Ziel: 4.5 - 5.0):", min_value=0.0, max_value=14.0, value=4.7, step=0.1, key="ph4")
         lw4 = st.number_input("Leitwert (Ziel: max. 500 µS/cm):", min_value=0, max_value=5000, value=350, key="lw4")
@@ -166,49 +171,56 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.markdown("**Laboranalyse (Titration):**")
         ml4 = st.number_input("Verbrauch Titrierlösung Passivierung in ml:", min_value=0.0, max_value=50.0, value=4.4, step=0.1, key="ml4")
         
+        # Titrationsfaktor (1ml entspricht 0.05% Konzentration - anpassen falls nötig)
         titrations_faktor_passivierung = 0.05 
         ist_konz4 = ml4 * titrations_faktor_passivierung
-        soll_min4, soll_max4, soll_ziel4 = 0.15, 0.30, 0.225
+        soll_min4 = 0.15
+        soll_max4 = 0.30
+        soll_ziel4 = 0.225 # Mittelwert als stabiles Dosierziel
         
         st.markdown("### 📋 Handlungsanweisung:")
         if not (4.5 <= ph4 <= 5.0):
             st.error(f"❌ pH-Wert außerhalb! Aktuell: {ph4} (Soll: 4.5 - 5.0). Korrekturchemie erforderlich!")
         if lw4 > 500:
-            st.error(f"❌ Leitwert zu hoch ({lw4} µS/cm)! Salzfracht zu hoch.")
+            st.error(f"❌ Leitwert zu hoch ({lw4} µS/cm)! Salzfracht in der Passivierung beeinträchtigt die Schicht.")
+        if temp4 > 30:
+            st.warning(f"⚠️ Bad-Temperatur zu hoch! Aktuell: {temp4} °C (Soll: max. 30 °C).")
             
-        st.metric(label="Aktuelle Konzentration Passivierung", value=f"{round(ist_konz4, 3)} %", delta=f"{round(ist_konz4 - soll_ziel4, 3)} %")
+        st.metric(label="Aktuelle Konzentration Passivierung", value=f"{round(ist_konz4, 3)} %", delta=f"{round(ist_konz4 - soll_ziel4, 3)} % (Ziel: 0.15 - 0.30%)")
         
         if ist_konz4 < soll_min4:
             fehlende_prozent4 = soll_ziel4 - ist_konz4
             chemie_faktor4 = 10.0 
             bedarf_kg4 = (fehlende_prozent4 * (v_eff4 / 1000.0)) * chemie_faktor4
+            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter4 = bedarf_kg4 / 1.09
             
-            st.error(f"❌ Konzentration zu gering! Bitte exakt **{round(bedarf_kg4, 2)} kg** (ca. **{round(bedarf_liter4, 2)} Liter**) eska phor P 355-2 nachdosieren.")
+            st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
+            st.markdown(f"### ⚖️ **{round(bedarf_kg4, 2)} kg** oder 🧪 **{round(bedarf_liter4, 2)} Liter** eska phor P 355-2 hinzugeben.")
             
             st.warning("""
-            **⚠️ SICHERHEITSHINWEIS (eska phor P 355-2):**
-            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat) [cite: 485, 487]
-            * **PSA beim Dosieren [cite: 505]:** * Gestellbrille mit Seitenschutz [cite: 609]
-              * Schutzhandschuhe (FKM 0,7mm oder CR 0,65mm) [cite: 615, 616, 617]
-              * Schürze [cite: 622]
+            **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor P 355-2):**
+            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden & Hautreizungen)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**!
+            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen!
             """)
         elif ist_konz4 > soll_max4:
-            st.warning("⚠️ Konzentration zu hoch! Dosierpumpe drosseln.")
+            st.warning("⚠️ Konzentration der Passivierung zu hoch! Gefahr von Haftungsproblemen unter dem Pulverlack. Dosierpumpe drosseln.")
         else:
-            st.success("🎯 Passivierung läuft stabil im Soll-Bereich.")
+            st.success("🎯 Passivierungsbad läuft stabil im optimalen Bereich.")
 
     # --- BECKEN 5: VE-SPÜLE 2 ---
     with tab5:
-        st.subheader("Becken 5: VE-Spüle 2 (Max. 1.000 Liter)")
+        st.subheader("Becken 5: VE-Spüle 2 (Letzte Spüle vor dem Trockner)")
         lw5 = st.number_input("Leitwert (Ziel: max. 50 µS/cm):", min_value=0, max_value=500, value=15, key="lw5")
         temp5 = st.number_input("Temperatur (Ziel: max. 30 °C):", min_value=0, max_value=100, value=21, key="temp5")
         
         st.markdown("### 📋 Handlungsanweisung:")
         if lw5 > 50:
-            st.error(f"🚨 KRITISCH! Leitwert viel zu hoch ({lw5} µS/cm)! Gefahr von Salzflecken unter dem Pulver! Sofort Harzbett / VE-Anlage prüfen!")
+            st.error(f"🚨 KRITISCH! Leitwert viel zu hoch ({lw5} µS/cm)! Gefahr von Salzflecken unter der Pulverschicht! Sofort Mischbett-Harz wechseln / VE-Anlage prüfen!")
         else:
-            st.success("🎯 Perfekt! Leitwert ist optimal. Keine Fleckenbildung zu erwarten.")
+            st.success("🎯 Perfekt! Leitwert ist optimal. Keine Salzflecken auf der Ware zu befürchten.")
 
 else:
     st.info("💡 Bitte hake zuerst alle Punkte des Morgen-Check-ups ab, um die Beckenanalyse freizuschalten.")

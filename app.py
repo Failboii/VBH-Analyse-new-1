@@ -8,7 +8,7 @@ from datetime import datetime
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
-# --- COGNITO/DESIGN: RADIKALER KÄRCHER-STYLE & KONTRAST-FIX ---
+# --- COGNITO/DESIGN: DER ULTIMATIVE KÄRCHER-INPUT-FIX ---
 st.markdown(
     """
     <style>
@@ -28,27 +28,38 @@ st.markdown(
         margin-bottom: 30px;
     }
     
-    /* 3. DER KONTRAST-KILLER: Zwingt absolut JEDEN Text auf der weißen Karte, tiefschwarz zu sein */
-    [data-testid="stMainBlockContainer"] *,
+    /* 3. Zwingt allen normalen Text auf der weißen Karte, tiefschwarz zu sein */
+    [data-testid="stMainBlockContainer"] h1, 
+    [data-testid="stMainBlockContainer"] h2, 
+    [data-testid="stMainBlockContainer"] h3, 
     [data-testid="stMainBlockContainer"] p,
     [data-testid="stMainBlockContainer"] label,
-    [data-testid="stMainBlockContainer"] span,
-    [data-testid="stMainBlockContainer"] div {
+    [data-testid="stMainBlockContainer"] span {
         color: #111111 !important;
     }
     
-    /* 4. Spezifischer Fix für Streamlit-Auswahltexte (Checkboxes & Radio-Buttons) */
-    div[data-testid="stCheckbox"] label p,
-    div[data-testid="stRadio"] label p,
-    div[data-testid="stSlider"] label p,
-    div[data-testid="stNumberInput"] label p,
-    div[data-testid="stTextInput"] label p {
-        color: #111111 !important;
-        font-weight: 600 !important; /* Macht die Schrift schön knackig fett */
-        font-size: 1rem !important;
+    /* 4. DIE RETTUNG FÜR DIE EINGABEBOXEN: Zwingt die Kästen, hell zu sein, und die Zahlen schwarz */
+    div[data-baseweb="input"] {
+        background-color: #F4F6F7 !important; /* Helles Industriegrau für die Box */
+        border: 1px solid #BDC3C7 !important;
+        border-radius: 4px !important;
     }
     
-    /* Ausnahme für Systemmeldungen (st.error, st.success), damit deren Rot/Grün-Logik lesbar bleibt */
+    /* Zielgerichtet für den Text/die Zahlen im Inneren der Boxen */
+    div[data-baseweb="input"] input {
+        color: #111111 !important; /* Tiefschwarze Zahlen */
+        -webkit-text-fill-color: #111111 !important; /* Fix für iPhones/Safaribrowser */
+        font-weight: bold !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* Plus/Minus-Knöpfe bei den Zahlenfeldern lesbar machen */
+    div[data-testid="stNumberInput"] button {
+        background-color: #E5E8E8 !important;
+        color: #111111 !important;
+    }
+    
+    /* Ausnahme für Systemmeldungen (st.error, st.success) beibehalten */
     div[data-testid="stNotification"] *, 
     div[data-testid="stNotification"] p {
         color: inherit !important;

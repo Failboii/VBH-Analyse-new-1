@@ -8,49 +8,59 @@ from datetime import datetime
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
-# --- DESIGN-UPGRADE: KÄRCHER-STYLE (RAL 7012 BASALTLGRAU & KÄRCHER GELB) ---
+# --- COGNITO/DESIGN: RADIKALER KÄRCHER-STYLE & KONTRAST-FIX ---
 st.markdown(
     """
     <style>
-    /* Hintergrund der App: RAL 7012 Basaltgrau */
-    [data-testid="stAppViewContainer"] {
+    /* 1. Äußerer App-Hintergrund: Original RAL 7012 Basaltgrau */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #5F696E !important;
     }
 
-    /* Die Hauptkarte: Weiß, übersichtlich, mit Kärcher-Gelb Akzentstreifen oben */
+    /* 2. Die Hauptkarte: Weiß mit fettem Kärcher-Gelb-Balken (#FFDD00) oben */
     [data-testid="stMainBlockContainer"] {
         background-color: #FFFFFF !important;
         padding: 2.5rem 2rem;
         border-radius: 12px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.4);
-        border-top: 12px solid #FFDD00; /* Kärcher Gelb */
+        box-shadow: 0px 15px 35px rgba(0, 0, 0, 0.5);
+        border-top: 16px solid #FFDD00 !important; 
         margin-top: 30px;
         margin-bottom: 30px;
     }
     
-    /* RADIKALER KONTRAST-FIX: Zwingt allen Text, Überschriften und Labels im Hauptfenster dazu, dunkelgrau zu sein */
-    [data-testid="stMainBlockContainer"] h1, 
-    [data-testid="stMainBlockContainer"] h2, 
-    [data-testid="stMainBlockContainer"] h3, 
+    /* 3. DER KONTRAST-KILLER: Zwingt absolut JEDEN Text auf der weißen Karte, tiefschwarz zu sein */
+    [data-testid="stMainBlockContainer"] *,
     [data-testid="stMainBlockContainer"] p,
     [data-testid="stMainBlockContainer"] label,
     [data-testid="stMainBlockContainer"] span,
     [data-testid="stMainBlockContainer"] div {
-        color: #222222 !important;
+        color: #111111 !important;
     }
     
-    /* Ausnahme für Text in Warn- und Erfolgsboxen (damit die Lesbarkeit dort passt) */
-    [data-testid="stNotification"] p,
-    [data-testid="stNotification"] h1,
-    [data-testid="stNotification"] h2,
-    [data-testid="stNotification"] h3,
-    [data-testid="stNotification"] span {
+    /* 4. Spezifischer Fix für Streamlit-Auswahltexte (Checkboxes & Radio-Buttons) */
+    div[data-testid="stCheckbox"] label p,
+    div[data-testid="stRadio"] label p,
+    div[data-testid="stSlider"] label p,
+    div[data-testid="stNumberInput"] label p,
+    div[data-testid="stTextInput"] label p {
+        color: #111111 !important;
+        font-weight: 600 !important; /* Macht die Schrift schön knackig fett */
+        font-size: 1rem !important;
+    }
+    
+    /* Ausnahme für Systemmeldungen (st.error, st.success), damit deren Rot/Grün-Logik lesbar bleibt */
+    div[data-testid="stNotification"] *, 
+    div[data-testid="stNotification"] p {
         color: inherit !important;
     }
 
-    /* Aktivierter Reiter (Tab) bekommt einen Kärcher-Gelben Balken */
-    .stTabs [data-baseweb="tab-highlight"] {
-        background-color: #FFDD00 !important;
+    /* Anpassung der Tabs (Registerkarten) im Kärcher-Look */
+    button[data-baseweb="tab"] {
+        color: #5F696E !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #111111 !important;
+        border-bottom-color: #FFDD00 !important;
     }
     </style>
     """,
@@ -59,8 +69,8 @@ st.markdown(
 
 # --- FUNKTION: E-MAIL SENDEN ---
 def sende_protokoll_email(bericht_text):
-    smtp_server = "smtp.gmail.com"  # Falls du Gmail nutzt, sonst z.B. smtp.strato.de etc.
-    port = 465  # SSL Port
+    smtp_server = "smtp.gmail.com"  
+    port = 465  
     absender_email = "DEINE_ANLAGEN_EMAIL@gmail.com" 
     passwort = "DEIN_SMTP_APP_PASSWORT" 
     empfaenger_email = "DEINE_CHEF_EMAIL@deinefirma.de"
@@ -160,7 +170,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.metric(label="Aktuelle Konzentration Passivierung", value=f"{round(ist_konz4, 3)} %", delta=f"{round(ist_konz4 - 0.225, 3)} %")
         if bedarf_kg4 > 0:
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
-            st.markdown(f"### ⚖️ **{round(bedarf_kg4, 2)} kg** oder 🧪 **{round(bedarf_liter4, 2)} Liter** eska phor P 355-2 hinzugeben.")
+            st.markdown(f"### ⚖️ **{round(bedarf_kg4, 2)} kg** oder 🧪 **{round(bedarf_kg4/1.09, 2)} Liter** eska phor P 355-2 hinzugeben.")
 
     with tab5:
         st.subheader("Becken 5: VE-Spüle 2")

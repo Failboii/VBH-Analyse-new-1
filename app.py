@@ -12,9 +12,9 @@ st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", lay
 def sende_protokoll_email(bericht_text):
     smtp_server = "smtp.gmail.com"  
     port = 465  
-    absender_email = "DEINE_ANLAGEN_EMAIL@gmail.com" 
-    passwort = "DEIN_SMTP_APP_PASSWORT" 
-    empfaenger_email = "DEINE_CHEF_EMAIL@deinefirma.de"
+    absender_email = "D_Wowi@web.de" 
+    passwort = "KST3910" 
+    empfaenger_email = "daniel.wowereit@karcher.com"
 
     msg = MIMEMultipart()
     msg['From'] = absender_email

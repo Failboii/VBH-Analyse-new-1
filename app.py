@@ -13,7 +13,7 @@ def sende_protokoll_email(bericht_text):
     smtp_server = "smtp.web.de"  
     port = 465  
     absender_email = "blindhate@web.de" 
-    passwort = "dxme chqc hcao lmvx" 
+    passwort = "dxmechqchcaolmvx" 
     empfaenger_email = "daniel.wowereit@karcher.com"
 
     msg = MIMEMultipart()

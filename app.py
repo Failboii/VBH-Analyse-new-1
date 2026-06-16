@@ -12,8 +12,8 @@ st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", lay
 def sende_protokoll_email(bericht_text):
     smtp_server = "smtp.gmail.com"  
     port = 465  
-    absender_email = "D_Wowi@web.de" 
-    passwort = "KST3910" 
+    absender_email = "blindhate@web.de" 
+    passwort = "dxme chqc hcao lmvx" 
     empfaenger_email = "daniel.wowereit@karcher.com"
 
     msg = MIMEMultipart()

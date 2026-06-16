@@ -3,6 +3,45 @@ import streamlit as st
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
+# --- DESIGN-UPGRADE: ANIMIERTES STAHLBECKEN (CSS INJECTION) ---
+st.markdown(
+    """
+    <style>
+    /* Hintergrund der gesamten App: Gebürsteter Industriestahl mit Schimmereffekt */
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(120deg, #4b535c, #788491, #a1b0be, #788491, #4b535c);
+        background-size: 400% 400%;
+        animation: steelShine 14s ease-in-out infinite;
+    }
+
+    /* Animation für den metallischen Lichtreflex */
+    @keyframes steelShine {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Die Inhaltskarte: Leicht transparent, damit das Stahlbecken durchschimmert, aber der Text perfekt lesbar bleibt */
+    [data-testid="stMainBlockContainer"] {
+        background-color: rgba(255, 255, 255, 0.94);
+        padding: 2.5rem 2rem;
+        border-radius: 16px;
+        box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.4);
+        border: 3px solid #5d6770;
+        margin-top: 30px;
+        margin-bottom: 30px;
+    }
+    
+    /* Schickere Tabs für die Beckenauswahl */
+    .stTabs [data-baseweb="tab"] {
+        font-weight: bold;
+        border-radius: 4px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🧪 Qualitätskontrolle Vorbehandlung")
 st.write("Produktionsüberwachung & Dosierrechner")
 
@@ -88,12 +127,11 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.markdown("**Laboranalyse (Titration):**")
         ml1 = st.number_input("Verbrauch Titrierlösung in ml (Entfettung):", min_value=0.0, max_value=50.0, value=5.5, step=0.1, key="ml1")
         
-        # Titrationsfaktor (1ml entspricht 0.5% Konzentration - anpassen falls nötig)
         titrations_faktor_entfettung = 0.5 
         ist_konz1 = ml1 * titrations_faktor_entfettung
         soll_min1 = 2.5
         soll_max1 = 3.0
-        soll_ziel1 = 2.75 # Perfekter Mittelwert als Dosierziel
+        soll_ziel1 = 2.75
         
         st.markdown("### 📋 Handlungsanweisung:")
         
@@ -108,10 +146,8 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         
         if ist_konz1 < soll_min1:
             fehlende_prozent = soll_ziel1 - ist_konz1
-            # Standardwert: 10 kg Produkt pro 1000L Wasser bewirken 1% Erhöhung
             chemie_faktor1 = 10.0 
             bedarf_kg = (fehlende_prozent * (v_eff1 / 1000.0)) * chemie_faktor1
-            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter = bedarf_kg / 1.09
             
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
@@ -119,10 +155,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             
             st.warning("""
             **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor N 6811):**
-            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen)
-            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen!
-            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen!
-            * Körperschutz: **Schürze** verpflichtend!
+            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen) [cite: 901, 902, 906]
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen! [cite: 1130]
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen! [cite: 1135, 1136, 1137]
+            * Körperschutz: **Schürze** verpflichtend! [cite: 1142]
             """)
         elif ist_konz1 > soll_max1:
             st.warning("⚠️ Konzentration zu hoch! Automatische Dosierpumpe drosseln oder vorübergehend abschalten.")
@@ -171,12 +207,11 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.markdown("**Laboranalyse (Titration):**")
         ml4 = st.number_input("Verbrauch Titrierlösung Passivierung in ml:", min_value=0.0, max_value=50.0, value=4.4, step=0.1, key="ml4")
         
-        # Titrationsfaktor (1ml entspricht 0.05% Konzentration - anpassen falls nötig)
         titrations_faktor_passivierung = 0.05 
         ist_konz4 = ml4 * titrations_faktor_passivierung
         soll_min4 = 0.15
         soll_max4 = 0.30
-        soll_ziel4 = 0.225 # Mittelwert als stabiles Dosierziel
+        soll_ziel4 = 0.225
         
         st.markdown("### 📋 Handlungsanweisung:")
         if not (4.5 <= ph4 <= 5.0):
@@ -192,7 +227,6 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             fehlende_prozent4 = soll_ziel4 - ist_konz4
             chemie_faktor4 = 10.0 
             bedarf_kg4 = (fehlende_prozent4 * (v_eff4 / 1000.0)) * chemie_faktor4
-            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter4 = bedarf_kg4 / 1.09
             
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
@@ -200,10 +234,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             
             st.warning("""
             **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor P 355-2):**
-            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden & Hautreizungen)
-            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich!
-            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**!
-            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen!
+            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden & Hautreizungen) [cite: 478, 479, 485, 487]
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich! [cite: 609]
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**! [cite: 615, 616, 617]
+            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen! [cite: 622]
             """)
         elif ist_konz4 > soll_max4:
             st.warning("⚠️ Konzentration der Passivierung zu hoch! Gefahr von Haftungsproblemen unter dem Pulverlack. Dosierpumpe drosseln.")

@@ -3,36 +3,88 @@ import streamlit as st
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
-# --- DESIGN-UPGRADE: ANIMIERTES STAHLBECKEN (CSS INJECTION) ---
+# --- DESIGN-UPGRADE: ANIMIERTES WASSERBAD MIT LUFTBLASEN (CSS INJECTION) ---
 st.markdown(
     """
     <style>
-    /* Hintergrund der gesamten App: Gebürsteter Industriestahl mit Schimmereffekt */
+    /* Hintergrund: Bewegtes Wasserbad */
     [data-testid="stAppViewContainer"] {
-        background: linear-gradient(120deg, #4b535c, #788491, #a1b0be, #788491, #4b535c);
+        background: linear-gradient(180deg, #1b4f72, #2874a6, #3498db, #2874a6);
         background-size: 400% 400%;
-        animation: steelShine 14s ease-in-out infinite;
+        animation: waterFlow 12s ease-in-out infinite;
+        overflow: hidden;
+        position: relative;
     }
 
-    /* Animation für den metallischen Lichtreflex */
-    @keyframes steelShine {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
+    /* Animation für die Wasserbewegung (Wellen-Effekt) */
+    @keyframes waterFlow {
+        0% { background-position: 50% 0%; }
+        50% { background-position: 50% 100%; }
+        100% { background-position: 50% 0%; }
     }
 
-    /* Die Inhaltskarte: Leicht transparent, damit das Stahlbecken durchschimmert, aber der Text perfekt lesbar bleibt */
+    /* Aufsteigende Luftblasen über CSS-Pseudoelemente simuliert */
+    [data-testid="stAppViewContainer"]::before,
+    [data-testid="stAppViewContainer"]::after {
+        content: "";
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(1px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        bottom: -50px;
+        animation: bubbleUp 8s infinite linear;
+        z-index: 0;
+    }
+
+    /* Erste Blase (links) */
+    [data-testid="stAppViewContainer"]::before {
+        left: 10%;
+        width: 20px;
+        height: 20px;
+        animation-duration: 9s;
+        animation-delay: 1s;
+    }
+
+    /* Zweite Blase (rechts) */
+    [data-testid="stAppViewContainer"]::after {
+        right: 15%;
+        width: 35px;
+        height: 35px;
+        animation-duration: 11s;
+        animation-delay: 3s;
+    }
+
+    /* Animation für das Aufsteigen und leichte Pendeln der Blasen */
+    @keyframes bubbleUp {
+        0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+        }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        100% {
+            transform: translateY(-120vh) translateX(20px);
+            opacity: 0;
+        }
+    }
+
+    /* Die Inhaltskarte im Vordergrund: Sauber getrennt vom animierten Hintergrund */
     [data-testid="stMainBlockContainer"] {
-        background-color: rgba(255, 255, 255, 0.94);
+        position: relative;
+        z-index: 1; /* Legt den Inhalt ÜBER die Luftblasen */
+        background-color: rgba(255, 255, 255, 0.95);
         padding: 2.5rem 2rem;
         border-radius: 16px;
-        box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.4);
-        border: 3px solid #5d6770;
+        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+        border: 2px solid #2874a6;
         margin-top: 30px;
         margin-bottom: 30px;
     }
     
-    /* Schickere Tabs für die Beckenauswahl */
+    /* Schickere Registerkarten */
     .stTabs [data-baseweb="tab"] {
         font-weight: bold;
         border-radius: 4px;
@@ -155,10 +207,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             
             st.warning("""
             **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor N 6811):**
-            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen) [cite: 901, 902, 906]
-            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen! [cite: 1130]
-            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen! [cite: 1135, 1136, 1137]
-            * Körperschutz: **Schürze** verpflichtend! [cite: 1142]
+            * Signalwort: **GEFAHR** (Verursacht schwere Augenschäden & Hautreizungen)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** tragen!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)** nutzen!
+            * Körperschutz: **Schürze** verpflichtend!
             """)
         elif ist_konz1 > soll_max1:
             st.warning("⚠️ Konzentration zu hoch! Automatische Dosierpumpe drosseln oder vorübergehend abschalten.")
@@ -234,10 +286,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             
             st.warning("""
             **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor P 355-2):**
-            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden & Hautreizungen) [cite: 478, 479, 485, 487]
-            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich! [cite: 609]
-            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**! [cite: 615, 616, 617]
-            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen! [cite: 622]
+            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat)
+            * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich!
+            * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**!
+            * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen!
             """)
         elif ist_konz4 > soll_max4:
             st.warning("⚠️ Konzentration der Passivierung zu hoch! Gefahr von Haftungsproblemen unter dem Pulverlack. Dosierpumpe drosseln.")
@@ -248,7 +300,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
     with tab5:
         st.subheader("Becken 5: VE-Spüle 2 (Letzte Spüle vor dem Trockner)")
         lw5 = st.number_input("Leitwert (Ziel: max. 50 µS/cm):", min_value=0, max_value=500, value=15, key="lw5")
-        temp5 = st.number_input("Temperatur (Ziel: max. 30 °C):", min_value=0, max_value=100, value=21, key="temp5")
+        temp5 = st.number_input("Temperatur (Ziel: max. 30 °C):", min_value=0, max_value=21, key="temp5")
         
         st.markdown("### 📋 Handlungsanweisung:")
         if lw5 > 50:

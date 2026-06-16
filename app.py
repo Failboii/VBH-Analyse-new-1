@@ -3,97 +3,6 @@ import streamlit as st
 # App-Konfiguration für Smartphones optimieren
 st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", layout="centered")
 
-# --- DESIGN-UPGRADE: ANIMIERTES WASSERBAD MIT LUFTBLASEN (CSS INJECTION) ---
-st.markdown(
-    """
-    <style>
-    /* Hintergrund: Bewegtes Wasserbad */
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(180deg, #1b4f72, #2874a6, #3498db, #2874a6);
-        background-size: 400% 400%;
-        animation: waterFlow 12s ease-in-out infinite;
-        overflow: hidden;
-        position: relative;
-    }
-
-    /* Animation für die Wasserbewegung (Wellen-Effekt) */
-    @keyframes waterFlow {
-        0% { background-position: 50% 0%; }
-        50% { background-position: 50% 100%; }
-        100% { background-position: 50% 0%; }
-    }
-
-    /* Aufsteigende Luftblasen über CSS-Pseudoelemente simuliert */
-    [data-testid="stAppViewContainer"]::before,
-    [data-testid="stAppViewContainer"]::after {
-        content: "";
-        position: absolute;
-        width: 30px;
-        height: 30px;
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(1px);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 50%;
-        bottom: -50px;
-        animation: bubbleUp 8s infinite linear;
-        z-index: 0;
-    }
-
-    /* Erste Blase (links) */
-    [data-testid="stAppViewContainer"]::before {
-        left: 10%;
-        width: 20px;
-        height: 20px;
-        animation-duration: 9s;
-        animation-delay: 1s;
-    }
-
-    /* Zweite Blase (rechts) */
-    [data-testid="stAppViewContainer"]::after {
-        right: 15%;
-        width: 35px;
-        height: 35px;
-        animation-duration: 11s;
-        animation-delay: 3s;
-    }
-
-    /* Animation für das Aufsteigen und leichte Pendeln der Blasen */
-    @keyframes bubbleUp {
-        0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0;
-        }
-        10% { opacity: 0.6; }
-        90% { opacity: 0.6; }
-        100% {
-            transform: translateY(-120vh) translateX(20px);
-            opacity: 0;
-        }
-    }
-
-    /* Die Inhaltskarte im Vordergrund: Sauber getrennt vom animierten Hintergrund */
-    [data-testid="stMainBlockContainer"] {
-        position: relative;
-        z-index: 1; /* Legt den Inhalt ÜBER die Luftblasen */
-        background-color: rgba(255, 255, 255, 0.95);
-        padding: 2.5rem 2rem;
-        border-radius: 16px;
-        box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
-        border: 2px solid #2874a6;
-        margin-top: 30px;
-        margin-bottom: 30px;
-    }
-    
-    /* Schickere Registerkarten */
-    .stTabs [data-baseweb="tab"] {
-        font-weight: bold;
-        border-radius: 4px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
 st.title("🧪 Qualitätskontrolle Vorbehandlung")
 st.write("Produktionsüberwachung & Dosierrechner")
 
@@ -179,11 +88,12 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.markdown("**Laboranalyse (Titration):**")
         ml1 = st.number_input("Verbrauch Titrierlösung in ml (Entfettung):", min_value=0.0, max_value=50.0, value=5.5, step=0.1, key="ml1")
         
+        # Titrationsfaktor (1ml entspricht 0.5% Konzentration - anpassen falls nötig)
         titrations_faktor_entfettung = 0.5 
         ist_konz1 = ml1 * titrations_faktor_entfettung
         soll_min1 = 2.5
         soll_max1 = 3.0
-        soll_ziel1 = 2.75
+        soll_ziel1 = 2.75 # Perfekter Mittelwert als Dosierziel
         
         st.markdown("### 📋 Handlungsanweisung:")
         
@@ -198,8 +108,10 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         
         if ist_konz1 < soll_min1:
             fehlende_prozent = soll_ziel1 - ist_konz1
+            # Standardwert: 10 kg Produkt pro 1000L Wasser bewirken 1% Erhöhung
             chemie_faktor1 = 10.0 
             bedarf_kg = (fehlende_prozent * (v_eff1 / 1000.0)) * chemie_faktor1
+            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter = bedarf_kg / 1.09
             
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
@@ -259,11 +171,12 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
         st.markdown("**Laboranalyse (Titration):**")
         ml4 = st.number_input("Verbrauch Titrierlösung Passivierung in ml:", min_value=0.0, max_value=50.0, value=4.4, step=0.1, key="ml4")
         
+        # Titrationsfaktor (1ml entspricht 0.05% Konzentration - anpassen falls nötig)
         titrations_faktor_passivierung = 0.05 
         ist_konz4 = ml4 * titrations_faktor_passivierung
         soll_min4 = 0.15
         soll_max4 = 0.30
-        soll_ziel4 = 0.225
+        soll_ziel4 = 0.225 # Mittelwert als stabiles Dosierziel
         
         st.markdown("### 📋 Handlungsanweisung:")
         if not (4.5 <= ph4 <= 5.0):
@@ -279,6 +192,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             fehlende_prozent4 = soll_ziel4 - ist_konz4
             chemie_faktor4 = 10.0 
             bedarf_kg4 = (fehlende_prozent4 * (v_eff4 / 1000.0)) * chemie_faktor4
+            # Umrechnung in Liter über die SDB-Dichte von 1.09 g/cm³
             bedarf_liter4 = bedarf_kg4 / 1.09
             
             st.error(f"❌ KONZENTRATION ZU GERING! Bitte exakt nachdosieren:")
@@ -286,7 +200,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
             
             st.warning("""
             **⚠️ VORGESCHRIEBENE PSA (Laut Sicherheitsdatenblatt eska phor P 355-2):**
-            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat)
+            * Signalwort: **GEFAHR** (Enthält Triethanolammoniumhexafluorozirconat. Verursacht schwere Augenschäden & Hautreizungen)
             * Schutzbrille: **Gestellbrille mit Seitenschutz** zwingend erforderlich!
             * Handschutz: **Fluorkautschuk (FKM, 0.7 mm)** oder **Polychloropren (CR, 0.65 mm)**!
             * Körperschutz: Flüssigkeitsdichte **Schürze** anlegen!
@@ -300,7 +214,7 @@ if uv_anlage and pumpen and bandfilter_bereit and salz_geprueft:
     with tab5:
         st.subheader("Becken 5: VE-Spüle 2 (Letzte Spüle vor dem Trockner)")
         lw5 = st.number_input("Leitwert (Ziel: max. 50 µS/cm):", min_value=0, max_value=500, value=15, key="lw5")
-        temp5 = st.number_input("Temperatur (Ziel: max. 30 °C):", min_value=0, max_value=21, key="temp5")
+        temp5 = st.number_input("Temperatur (Ziel: max. 30 °C):", min_value=0, max_value=100, value=21, key="temp5")
         
         st.markdown("### 📋 Handlungsanweisung:")
         if lw5 > 50:

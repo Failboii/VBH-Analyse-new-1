@@ -10,7 +10,7 @@ st.set_page_config(page_title="HAUG CHEMIE Vorbehandlung", page_icon="🧪", lay
 
 # --- FUNKTION: E-MAIL SENDEN ---
 def sende_protokoll_email(bericht_text):
-    smtp_server = "smtp.gmail.com"  
+    smtp_server = "smtp.web.de"  
     port = 465  
     absender_email = "blindhate@web.de" 
     passwort = "dxme chqc hcao lmvx" 
